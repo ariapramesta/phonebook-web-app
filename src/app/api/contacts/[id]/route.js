@@ -4,7 +4,7 @@ export async function PUT(request, { params }) {
     try {
         const body = await request.json()
         const contact = await prisma.contact.update({
-            where: { id: params.id },
+            where: { id: Number(params.id) },
             data: body,
         })
 
@@ -17,9 +17,9 @@ export async function PUT(request, { params }) {
 export async function DELETE(request, { params }) {
     try {
         const contact = await prisma.contact.delete({
-            where: { id: params.id }
+            where: { id: Number(params.id) }
         });
-        return new Response(contact, { status: 204 });
+        return Response.json(contact, { status: 200 });
     } catch (err) {
         return Response.json({ message: err.message }, { status: 500 })
     }
