@@ -13,3 +13,12 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+model Contact {
+  id        Int      @id @default(autoincrement())
+  name      String
+  phone     String
+  avatar    String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
