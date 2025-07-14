@@ -1,20 +1,20 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { read, create, update, remove } from '../../api/contactApi';
+import { read, create, update, remove } from '../api/contactApi';
 
 // Async thunks for CRUD operations
 export const getContacts = createAsyncThunk('contacts/getContacts', async () => {
   const response = await read();
-  return response;
+  return response.data;
 });
 
 export const createContact = createAsyncThunk('contacts/createContact', async (contact) => {
   const response = await create(contact);
-  return response;
+  return response.data;
 });
 
 export const editContact = createAsyncThunk('contacts/editContact', async ({ id, contact }) => {
   const response = await update(id, contact);
-  return response;
+  return response.data;
 });
 
 export const removeContact = createAsyncThunk('contacts/removeContact', async (id) => {
@@ -38,8 +38,11 @@ const contactsSlice = createSlice({
       })
       .addCase(getContacts.fulfilled, (state, action) => {
         state.loading = false;
-        state.items = action.payload;
+        state.items = action.payload.phonebooks;
+        state.page = action.payload.page;
+        state.pages = action.payload.pages;
       })
+
       .addCase(getContacts.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message;
