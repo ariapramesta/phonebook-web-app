@@ -1,9 +1,9 @@
 import { request } from './request';
 
-export const getContacts = () => request.get('contacts');
+export const read = () => request.get('contacts');
 
-export const addContact = (data) => request.post('contacts', data);
+export const create = (data) => request.post('contacts', data);
 
-export const updateContact = (id, data) => request.put(`contacts/${id}`, { data });
+export const update = (id, data) => request.put(`contacts/${id}`, { data });
 
-export const deleteContact = (id) => request.delete(`contacts/${id}`);
+export const remove = (id) => request.delete(`contacts/${id}`);
