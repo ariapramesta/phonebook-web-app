@@ -26,7 +26,9 @@ export default function ContactItem({ item }) {
     return (
       <div className="shadow-inner bg-white rounded-2xl p-4 flex items-center gap-5 border border-gray-200">
         <div>
-          <Avatar src={item.avatar || "/avatar.png"} />
+          <a href={`/edit-avatar?id=${item.id}`} title="Edit Avatar">
+            <Avatar src={item.avatar || "/avatar.png"} />
+          </a>
         </div>
         <div className="flex flex-col w-full gap-1">
           <input
@@ -67,7 +69,9 @@ export default function ContactItem({ item }) {
   return (
     <div className="shadow-inner bg-white rounded-2xl p-4 flex items-center gap-5 border border-gray-200">
       <div>
-        <Avatar src={item.avatar || "/avatar.png"} />
+        <a href={`/edit-avatar?id=${item.id}`} title="Edit Avatar">
+          <Avatar src={item.avatar || "/avatar.png"} />
+        </a>
       </div>
       <div className="flex flex-col w-full gap-1">
         <div className="font-semibold text-xl text-gray-900">{item.name}</div>
