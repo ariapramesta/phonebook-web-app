@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { getContacts } from "@/redux/contactsSlice";
 import ContactItem from "./ContactItem";
@@ -8,28 +8,50 @@ import { ArrowUpAZ, ArrowDownAZ, PlusCircle } from "lucide-react";
 
 export default function ContactList() {
   const dispatch = useDispatch();
-  const { items, loading, error } = useSelector((state) => state.contacts);
+  const { items, loading, error, page = 1, pages = 1 } = useSelector((state) => state.contacts);
 
   const [search, setSearch] = useState("");
   const [sortAsc, setSortAsc] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
 
+  // Ref for the sentinel div
+  const loadMoreRef = useRef(null);
+
+  // Debounced search
+  const searchRef = useRef(search);
+  useEffect(() => { searchRef.current = search; }, [search]);
   useEffect(() => {
-    dispatch(getContacts());
-  }, [dispatch]);
+    const handler = setTimeout(() => {
+      if (searchRef.current === search) {
+        dispatch(getContacts({ page: 1, search, sortAsc }));
+      }
+    }, 400); // debounce ms
+    return () => clearTimeout(handler);
+  }, [dispatch, search, sortAsc]);
 
-  const filteredAndSortedItems = useMemo(() => {
-    let filtered = items.filter((item) =>
-      item.name.toLowerCase().includes(search.toLowerCase())
+  // Intersection Observer for infinite scroll
+  useEffect(() => {
+    if (loading || loadingMore) return;
+    if (page >= pages) return;
+    const observer = new window.IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && !loading && !loadingMore && page < pages) {
+          setLoadingMore(true);
+          dispatch(getContacts({ page: page + 1, search, sortAsc, append: true }))
+            .finally(() => setLoadingMore(false));
+        }
+      },
+      { root: null, rootMargin: "0px", threshold: 1.0 }
     );
-    filtered.sort((a, b) => {
-      if (a.name.toLowerCase() < b.name.toLowerCase()) return sortAsc ? -1 : 1;
-      if (a.name.toLowerCase() > b.name.toLowerCase()) return sortAsc ? 1 : -1;
-      return 0;
-    });
-    return filtered;
-  }, [items, search, sortAsc]);
+    if (loadMoreRef.current) {
+      observer.observe(loadMoreRef.current);
+    }
+    return () => {
+      if (loadMoreRef.current) observer.unobserve(loadMoreRef.current);
+    };
+  }, [dispatch, page, pages, loading, loadingMore, search, sortAsc]);
 
-  if (loading) return <p>Loading...</p>;
+  if (loading && page === 1) return <p>Loading...</p>;
   if (error) return <p className="text-red-600">Error: {error}</p>;
 
   return (
@@ -56,10 +78,16 @@ export default function ContactList() {
         </a>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 mt-4">
-        {filteredAndSortedItems.map((item) => (
+        {items.map((item) => (
           <ContactItem key={item.id} item={item} />
         ))}
       </div>
+      <div ref={loadMoreRef} style={{ height: 1 }} />
+      {loadingMore && (
+        <div className="flex justify-center my-4">
+          <span className="px-4 py-2 bg-gray-200 rounded">Loading more...</span>
+        </div>
+      )}
     </div>
   );
 }

@@ -1,6 +1,6 @@
 import { request } from './request';
 
-export const read = () => request.get('contacts');
+export const read = (params = {}) => request.get('contacts', { params });
 
 export const create = (data) => request.post('contacts', data);
 
